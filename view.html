@@ -18,9 +18,61 @@
     <tbody id="paymentsTable"></tbody>
   </table>
 
+  <p id="status"></p>
+
   <br>
   <a href="index.html">Add New Payment</a>
 
-  <script src="script.js"></script>
+  <script>
+    // Put your Web App URL here:
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuvqY3e_Fl3L-zMXRjK5wOPsAeg88P8MQC5YXO1qqeegYrAoMGrCFp-fZFi1vGZhKO/exec";
+
+    const table = document.getElementById("paymentsTable");
+    const statusEl = document.getElementById("status");
+
+    function renderData(data) {
+      if (!data.ok) {
+        statusEl.textContent = "Failed to load.";
+        return;
+      }
+
+      table.innerHTML = "";
+      data.rows.forEach(r => {
+        const tr = document.createElement("tr");
+        const valueNum = Number(r.value);
+        tr.innerHTML = `
+          <td>${r.date ?? ""}</td>
+          <td>${r.name ?? ""}</td>
+          <td>$${Number.isFinite(valueNum) ? valueNum.toFixed(2) : (r.value ?? "")}</td>
+        `;
+        table.appendChild(tr);
+      });
+
+      statusEl.textContent = `Loaded ${data.rows.length} record(s).`;
+    }
+
+    // JSONP loader
+    function loadJSONP() {
+      statusEl.textContent = "Loading...";
+
+      const cbName = "cb_" + Math.random().toString(36).slice(2);
+      window[cbName] = (payload) => {
+        renderData(payload);
+        delete window[cbName];
+        script.remove();
+      };
+
+      const script = document.createElement("script");
+      script.src = `${SCRIPT_URL}?callback=${cbName}`;
+      script.onerror = () => {
+        statusEl.textContent = "Error loading data (check SCRIPT_URL / deployment access).";
+        delete window[cbName];
+        script.remove();
+      };
+      document.body.appendChild(script);
+    }
+
+    loadJSONP();
+  </script>
 </body>
 </html>

@@ -7,31 +7,54 @@
 <body>
   <h1>Add Payment</h1>
 
-  <form id="paymentForm">
+  <!-- 1) Paste your Apps Script Web App URL below -->
+  <form id="paymentForm" method="post" target="hidden_iframe">
     <label>
       Date:
-      <input type="date" id="date" required />
+      <input type="date" name="date" required />
     </label>
     <br><br>
 
     <label>
       Name:
-      <input type="text" id="name" required />
+      <input type="text" name="name" required />
     </label>
     <br><br>
 
     <label>
       Paid Value:
-      <input type="number" id="value" step="0.01" required />
+      <input type="number" name="value" step="0.01" required />
     </label>
     <br><br>
 
     <button type="submit">Add</button>
   </form>
 
+  <!-- Hidden iframe used to submit without leaving the page (avoids CORS) -->
+  <iframe name="hidden_iframe" style="display:none;"></iframe>
+
+  <p id="status"></p>
+
   <br>
   <a href="view.html">View Payments</a>
 
-  <script src="script.js"></script>
+  <script>
+    // Put your Web App URL here:
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuvqY3e_Fl3L-zMXRjK5wOPsAeg88P8MQC5YXO1qqeegYrAoMGrCFp-fZFi1vGZhKO/exec";
+
+    const form = document.getElementById("paymentForm");
+    const statusEl = document.getElementById("status");
+
+    form.action = SCRIPT_URL;
+
+    form.addEventListener("submit", () => {
+      statusEl.textContent = "Saving...";
+      // Give the iframe a moment; then show success and reset
+      setTimeout(() => {
+        statusEl.textContent = "Saved ✅";
+        form.reset();
+      }, 800);
+    });
+  </script>
 </body>
 </html>
