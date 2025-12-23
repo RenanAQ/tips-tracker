@@ -1,61 +1,74 @@
-<body>
-    <div class="container">
-  
-      <div class="header">
-        <div>
-          <h1 class="title">Add Payment</h1>
-          <p class="subtitle">Enter a date, a name, and the paid value — it saves to Google Sheets.</p>
-        </div>
-        <span class="badge"><span class="dot"></span> Connected to Sheets</span>
-      </div>
-  
-      <div class="card">
-        <form id="paymentForm" method="post" target="hidden_iframe">
-          <div class="grid">
-            <div class="field">
-              <label>Date</label>
-              <input type="date" name="date" required />
-            </div>
-  
-            <div class="field">
-              <label>Name</label>
-              <input type="text" name="name" placeholder="e.g., Emma" required />
-            </div>
-  
-            <div class="field">
-              <label>Paid Value</label>
-              <input type="number" name="value" step="0.01" placeholder="e.g., 100" required />
-            </div>
-          </div>
-  
-          <div class="toolbar">
-            <button class="btn" type="submit">Save</button>
-            <a class="btn secondary" href="view.html">View Records</a>
-            <span class="status" id="status"></span>
-          </div>
-  
-          <div class="help">Tip: use consistent names to make filtering easier later.</div>
-        </form>
-  
-        <iframe name="hidden_iframe" style="display:none;"></iframe>
-      </div>
-    </div>
-  
-    <script>
-      const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuvqY3e_Fl3L-zMXRjK5wOPsAeg88P8MQC5YXO1qqeegYrAoMGrCFp-fZFi1vGZhKO/exec";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tips Tracker — Add Entry</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
 
-      const form = document.getElementById("paymentForm");
-      const statusEl = document.getElementById("status");
-  
-      form.action = SCRIPT_URL;
-  
-      form.addEventListener("submit", () => {
-        statusEl.textContent = "Saving…";
-        setTimeout(() => {
-          statusEl.textContent = "Saved ✅";
-          form.reset();
-        }, 900);
-      });
-    </script>
-  </body>
-  
+<body>
+  <div class="container">
+
+    <div class="header">
+      <div>
+        <h1 class="title">Add Tip</h1>
+        <p class="subtitle">Save daily tips directly to Google Sheets.</p>
+      </div>
+      <span class="badge">
+        <span class="dot"></span>
+        Connected
+      </span>
+    </div>
+
+    <div class="card">
+      <form id="paymentForm" method="post" target="hidden_iframe">
+
+        <div class="grid">
+          <div class="field">
+            <label>Date</label>
+            <input type="date" name="date" required />
+          </div>
+
+          <div class="field">
+            <label>Name</label>
+            <input type="text" name="name" placeholder="e.g. Emma" required />
+          </div>
+
+          <div class="field">
+            <label>Tip Amount</label>
+            <input type="number" name="value" step="0.01" placeholder="e.g. 100" required />
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <button type="submit" class="btn">Save Tip</button>
+          <a href="view.html" class="btn secondary">View Records</a>
+          <span class="status" id="status"></span>
+        </div>
+
+        <p class="help">Use consistent names to make summaries easier later.</p>
+      </form>
+
+      <iframe name="hidden_iframe" style="display:none;"></iframe>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuvqY3e_Fl3L-zMXRjK5wOPsAeg88P8MQC5YXO1qqeegYrAoMGrCFp-fZFi1vGZhKO/exec";
+
+    const form = document.getElementById("paymentForm");
+    const statusEl = document.getElementById("status");
+
+    form.action = SCRIPT_URL;
+
+    form.addEventListener("submit", () => {
+      statusEl.textContent = "Saving…";
+      setTimeout(() => {
+        statusEl.textContent = "Saved ✅";
+        form.reset();
+      }, 900);
+    });
+  </script>
+</body>
+</html>

@@ -1,89 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tips Tracker — Records</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
 <body>
-    <div class="container">
-  
-      <div class="header">
-        <div>
-          <h1 class="title">Payment Records</h1>
-          <p class="subtitle">Live data from your Google Sheet.</p>
-        </div>
-        <a class="btn" href="index.html">+ Add Payment</a>
+  <div class="container">
+
+    <div class="header">
+      <div>
+        <h1 class="title">Tip Records</h1>
+        <p class="subtitle">Live data pulled from Google Sheets.</p>
       </div>
-  
-      <div class="card">
-        <div class="toolbar">
-          <span class="badge"><span class="dot"></span> Updated in real-time</span>
-          <span class="status" id="status"></span>
-          <button class="btn secondary" id="refreshBtn" type="button">Refresh</button>
-        </div>
-  
-        <div class="tableWrap">
-          <table>
-            <thead>
-              <tr>
-                <th style="width:160px;">Date</th>
-                <th>Name</th>
-                <th style="width:160px;">Paid Value</th>
-              </tr>
-            </thead>
-            <tbody id="paymentsTable"></tbody>
-          </table>
-        </div>
+      <a href="index.html" class="btn">+ Add Tip</a>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <span class="badge">
+          <span class="dot"></span>
+          Live data
+        </span>
+        <span class="status" id="status"></span>
+        <button class="btn secondary" id="refreshBtn" type="button">Refresh</button>
+      </div>
+
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:160px;">Date</th>
+              <th>Name</th>
+              <th style="width:160px;">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="paymentsTable"></tbody>
+        </table>
       </div>
     </div>
-  
-    <script>
-      const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuvqY3e_Fl3L-zMXRjK5wOPsAeg88P8MQC5YXO1qqeegYrAoMGrCFp-fZFi1vGZhKO/exec";
-      const table = document.getElementById("paymentsTable");
-      const statusEl = document.getElementById("status");
-      const refreshBtn = document.getElementById("refreshBtn");
-  
-      function money(v) {
-        const n = Number(v);
-        return Number.isFinite(n) ? `$${n.toFixed(2)}` : (v ?? "");
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuvqY3e_Fl3L-zMXRjK5wOPsAeg88P8MQC5YXO1qqeegYrAoMGrCFp-fZFi1vGZhKO/exec";
+
+    const table = document.getElementById("paymentsTable");
+    const statusEl = document.getElementById("status");
+    const refreshBtn = document.getElementById("refreshBtn");
+
+    function money(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? `$${n.toFixed(2)}` : "";
+    }
+
+    function renderData(data) {
+      if (!data.ok) {
+        statusEl.textContent = "Failed to load data.";
+        return;
       }
-  
-      function renderData(data) {
-        if (!data.ok) {
-          statusEl.textContent = "Failed to load.";
-          return;
-        }
-  
-        table.innerHTML = "";
-        data.rows.forEach(r => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${r.date ?? ""}</td>
-            <td>${r.name ?? ""}</td>
-            <td class="money">${money(r.value)}</td>
-          `;
-          table.appendChild(tr);
-        });
-  
-        statusEl.textContent = `Loaded ${data.rows.length} record(s).`;
-      }
-  
-      function loadJSONP() {
-        statusEl.textContent = "Loading…";
-  
-        const cbName = "cb_" + Math.random().toString(36).slice(2);
-        window[cbName] = (payload) => {
-          renderData(payload);
-          delete window[cbName];
-          script.remove();
-        };
-  
-        const script = document.createElement("script");
-        script.src = `${SCRIPT_URL}?callback=${cbName}&_=${Date.now()}`;
-        script.onerror = () => {
-          statusEl.textContent = "Error loading data (check SCRIPT_URL / deployment access).";
-          delete window[cbName];
-          script.remove();
-        };
-        document.body.appendChild(script);
-      }
-  
-      refreshBtn.addEventListener("click", loadJSONP);
-      loadJSONP();
-    </script>
-  </body>
-  
+
+      table.innerHTML = "";
+      data.rows.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${r.date ?? ""}</td>
+          <td>${r.name ?? ""}</td>
+          <td class="money">${money(r.value)}</td>
+        `;
+        table.appendChild(tr);
+      });
+
+      statusEl.textContent = `Loaded ${data.rows.length} record(s).`;
+    }
+
+    function loadJSONP() {
+      statusEl.textContent = "Loading…";
+
+      const cbName = "cb_" + Math.random().toString(36).slice(2);
+
+      window[cbName] = payload => {
+        renderData(payload);
+        delete window[cbName];
+        script.remove();
+      };
+
+      const script = document.createElement("script");
+      script.src = `${SCRIPT_URL}?callback=${cbName}&_=${Date.now()}`;
+      script.onerror = () => {
+        statusEl.textContent = "Error loading data.";
+        delete window[cbName];
+        script.remove();
+      };
+
+      document.body.appendChild(script);
+    }
+
+    refreshBtn.addEventListener("click", loadJSONP);
+    loadJSONP();
+  </script>
+</body>
+</html>
