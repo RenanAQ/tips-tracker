@@ -3,48 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <title>Payment Entry</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Add Payment</h1>
+  <div class="container">
+    <div class="card">
+      <h1>Add Payment</h1>
+      <span class="badge">Saved in Google Sheets</span>
 
-  <!-- 1) Paste your Apps Script Web App URL below -->
-  <form id="paymentForm" method="post" target="hidden_iframe">
-    <label>
-      Date:
-      <input type="date" name="date" required />
-    </label>
-    <br><br>
+      <form id="paymentForm" method="post" target="hidden_iframe">
+        <div class="row" style="margin-top:14px;">
+          <div>
+            <label>Date</label>
+            <input type="date" name="date" required />
+          </div>
 
-    <label>
-      Name:
-      <input type="text" name="name" required />
-    </label>
-    <br><br>
+          <div>
+            <label>Name</label>
+            <input type="text" name="name" placeholder="e.g., Emma" required />
+          </div>
 
-    <label>
-      Paid Value:
-      <input type="number" name="value" step="0.01" required />
-    </label>
-    <br><br>
+          <div>
+            <label>Paid Value</label>
+            <input type="number" name="value" step="0.01" placeholder="e.g., 100" required />
+          </div>
+        </div>
 
-    <button type="submit">Add</button>
-  </form>
+        <div class="actions">
+          <button type="submit">Add</button>
+          <a class="link" href="view.html">View Payments →</a>
+          <span class="status" id="status"></span>
+        </div>
+      </form>
 
-  <!-- Hidden iframe used to submit without leaving the page (avoids CORS) -->
-  <iframe name="hidden_iframe" style="display:none;"></iframe>
-
-  <p id="status"></p>
-
-  <br>
-  <a href="view.html">View Payments</a>
+      <iframe name="hidden_iframe" style="display:none;"></iframe>
+    </div>
+  </div>
 
   <script>
-    // Put your Web App URL here:
-
-    console.log("Loading:", script.src);
-
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuvqY3e_Fl3L-zMXRjK5wOPsAeg88P8MQC5YXO1qqeegYrAoMGrCFp-fZFi1vGZhKO/exec";
-
     const form = document.getElementById("paymentForm");
     const statusEl = document.getElementById("status");
 
@@ -52,7 +49,6 @@
 
     form.addEventListener("submit", () => {
       statusEl.textContent = "Saving...";
-      // Give the iframe a moment; then show success and reset
       setTimeout(() => {
         statusEl.textContent = "Saved ✅";
         form.reset();

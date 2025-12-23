@@ -3,32 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <title>Payments</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Payment Records</h1>
+  <div class="container">
+    <div class="card">
+      <h1>Payment Records</h1>
+      <div class="actions" style="margin-top:10px;">
+        <a class="btn" href="index.html">+ Add Payment</a>
+        <span class="status" id="status"></span>
+      </div>
 
-  <table border="1" cellpadding="5">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Name</th>
-        <th>Paid Value</th>
-      </tr>
-    </thead>
-    <tbody id="paymentsTable"></tbody>
-  </table>
-
-  <p id="status"></p>
-
-  <br>
-  <a href="index.html">Add New Payment</a>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 160px;">Date</th>
+            <th>Name</th>
+            <th style="width: 160px;">Paid Value</th>
+          </tr>
+        </thead>
+        <tbody id="paymentsTable"></tbody>
+      </table>
+    </div>
+  </div>
 
   <script>
-    // Put your Web App URL here:
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuvqY3e_Fl3L-zMXRjK5wOPsAeg88P8MQC5YXO1qqeegYrAoMGrCFp-fZFi1vGZhKO/exec";
 
     const table = document.getElementById("paymentsTable");
     const statusEl = document.getElementById("status");
+
+    function money(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? `$${n.toFixed(2)}` : (v ?? "");
+    }
 
     function renderData(data) {
       if (!data.ok) {
@@ -39,11 +47,10 @@
       table.innerHTML = "";
       data.rows.forEach(r => {
         const tr = document.createElement("tr");
-        const valueNum = Number(r.value);
         tr.innerHTML = `
           <td>${r.date ?? ""}</td>
           <td>${r.name ?? ""}</td>
-          <td>$${Number.isFinite(valueNum) ? valueNum.toFixed(2) : (r.value ?? "")}</td>
+          <td class="money">${money(r.value)}</td>
         `;
         table.appendChild(tr);
       });
@@ -51,7 +58,6 @@
       statusEl.textContent = `Loaded ${data.rows.length} record(s).`;
     }
 
-    // JSONP loader
     function loadJSONP() {
       statusEl.textContent = "Loading...";
 
