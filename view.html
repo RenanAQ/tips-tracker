@@ -9,21 +9,17 @@
 
 <body>
   <div class="container">
-
     <div class="header">
       <div>
         <h1 class="title">Tip Records</h1>
-        <p class="subtitle">Live data pulled from Google Sheets.</p>
+        <p class="subtitle">Edit or delete entries (saved in Google Sheets).</p>
       </div>
       <a href="index.html" class="btn">+ Add Tip</a>
     </div>
 
     <div class="card">
       <div class="toolbar">
-        <span class="badge">
-          <span class="dot"></span>
-          Live data
-        </span>
+        <span class="badge"><span class="dot"></span> Live</span>
         <span class="status" id="status"></span>
         <button class="btn secondary" id="refreshBtn" type="button">Refresh</button>
       </div>
@@ -35,25 +31,65 @@
               <th style="width:160px;">Date</th>
               <th>Name</th>
               <th style="width:160px;">Amount</th>
+              <th style="width:170px;">Actions</th>
             </tr>
           </thead>
           <tbody id="paymentsTable"></tbody>
         </table>
       </div>
+
+      <!-- Hidden form for POST actions (no CORS) -->
+      <form id="actionForm" method="post" target="hidden_iframe" style="display:none;">
+        <input type="hidden" name="action" id="f_action">
+        <input type="hidden" name="id" id="f_id">
+        <input type="hidden" name="date" id="f_date">
+        <input type="hidden" name="name" id="f_name">
+        <input type="hidden" name="value" id="f_value">
+      </form>
+      <iframe name="hidden_iframe" style="display:none;"></iframe>
     </div>
   </div>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_wn68nU4dV008r1Mzf23gou2OmOe_xfiI6vgO4Xah-lWfifAqxmz-0s3Bb266G8J4/exec";
-    
+
 
     const table = document.getElementById("paymentsTable");
     const statusEl = document.getElementById("status");
     const refreshBtn = document.getElementById("refreshBtn");
 
+    const actionForm = document.getElementById("actionForm");
+    const f_action = document.getElementById("f_action");
+    const f_id = document.getElementById("f_id");
+    const f_date = document.getElementById("f_date");
+    const f_name = document.getElementById("f_name");
+    const f_value = document.getElementById("f_value");
+
+    actionForm.action = SCRIPT_URL;
+
     function money(v) {
       const n = Number(v);
       return Number.isFinite(n) ? `$${n.toFixed(2)}` : "";
+    }
+
+    function cleanDate(d) {
+      return String(d ?? "").split("T")[0];
+    }
+
+    function postAction(payload) {
+      f_action.value = payload.action || "";
+      f_id.value = payload.id || "";
+      f_date.value = payload.date || "";
+      f_name.value = payload.name || "";
+      f_value.value = payload.value ?? "";
+
+      statusEl.textContent = "Saving…";
+      actionForm.submit();
+
+      // Give Apps Script a moment, then refresh list
+      setTimeout(() => {
+        loadJSONP();
+      }, 900);
     }
 
     function renderData(data) {
@@ -63,12 +99,23 @@
       }
 
       table.innerHTML = "";
+
       data.rows.forEach(r => {
+        // headers are "id", "date", "name", "value"
+        const id = String(r.id ?? "");
+        const date = cleanDate(r.date);
+        const name = String(r.name ?? "");
+        const value = r.value;
+
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${String(r.date ?? "").split("T")[0]}</td>
-          <td>${r.name ?? ""}</td>
-          <td class="money">${money(r.value)}</td>
+          <td>${date}</td>
+          <td>${name}</td>
+          <td class="money">${money(value)}</td>
+          <td>
+            <button class="btn secondary" data-action="edit" data-id="${id}">Edit</button>
+            <button class="btn secondary" data-action="delete" data-id="${id}">Delete</button>
+          </td>
         `;
         table.appendChild(tr);
       });
@@ -80,7 +127,6 @@
       statusEl.textContent = "Loading…";
 
       const cbName = "cb_" + Math.random().toString(36).slice(2);
-
       window[cbName] = payload => {
         renderData(payload);
         delete window[cbName];
@@ -98,8 +144,46 @@
       document.body.appendChild(script);
     }
 
+    // Button handling (event delegation)
+    table.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+
+      if (action === "delete") {
+        const ok = confirm("Delete this entry?");
+        if (!ok) return;
+        postAction({ action: "delete", id });
+        return;
+      }
+
+      if (action === "edit") {
+        // Grab current values from the row cells
+        const row = btn.closest("tr");
+        const currentDate = row.children[0].textContent.trim();
+        const currentName = row.children[1].textContent.trim();
+        const currentValue = row.children[2].textContent.replace("$","").trim();
+
+        const newDate = prompt("Edit date (YYYY-MM-DD):", currentDate);
+        if (newDate === null) return;
+
+        const newName = prompt("Edit name:", currentName);
+        if (newName === null) return;
+
+        const newValue = prompt("Edit amount:", currentValue);
+        if (newValue === null) return;
+
+        postAction({ action: "update", id, date: newDate, name: newName, value: newValue });
+      }
+    });
+
     refreshBtn.addEventListener("click", loadJSONP);
     loadJSONP();
   </script>
 </body>
 </html>
+
+
+    
