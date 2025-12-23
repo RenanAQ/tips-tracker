@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Payment Entry</title>
+</head>
+<body>
+  <h1>Add Payment</h1>
+
+  <form id="paymentForm">
+    <label>
+      Date:
+      <input type="date" id="date" required />
+    </label>
+    <br><br>
+
+    <label>
+      Name:
+      <input type="text" id="name" required />
+    </label>
+    <br><br>
+
+    <label>
+      Paid Value:
+      <input type="number" id="value" step="0.01" required />
+    </label>
+    <br><br>
+
+    <button type="submit">Add</button>
+  </form>
+
+  <br>
+  <a href="view.html">View Payments</a>
+
+  <script src="script.js"></script>
+</body>
+</html>
